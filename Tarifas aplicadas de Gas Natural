@@ -1,34 +1,58 @@
-# Importamos las librerías necesarias
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
+from pyspark.sql.functions import col, month, year
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.regression import LinearRegression
+from pyspark.ml.evaluation import RegressionEvaluator
 
-# Inicializa la sesión de Spark
-spark = SparkSession.builder.appName('Tarea3').getOrCreate()
+# 1. Inicializa la sesión de Spark 
+spark = SparkSession.builder.appName('Tarea3').getOrCreate() 
 
-# Define la ruta del archivo .csv en HDFS
-# https://www.datos.gov.co/resource/ek3f-5wn4.csv
-file_path = 'hdfs://localhost:9000/Tarea3/ek3f-5wn4.csv'
+# Define la ruta del archivo .csv en HDFS 
+file_path = 'hdfs://localhost:9000/Tarea3/ek3f-5wn4.csv' 
 
-# Lee el archivo .csv
-df = spark.read.format('csv').option('header', 'true').option('inferSchema', 'true').load(file_path)
+# Cargar los datos desde HDFS
+data = spark.read.csv("hdfs://localhost:9000/Tarea3/ek3f-5wn4.csv", header=True, inferSchema=True)
 
-# Seleccionamos solo las columnas requeridas para mostrar el esquema
-df_selected = df.select("ANO", "MES", "NIT", "ESTRATO", "CARGO_FIJO")
+# 2. Preprocesamiento y limpieza de datos
+# Seleccionar las columnas relevantes para el análisis y eliminar valores nulos
+data = data.select("ANO", "MES", "EMPRESA", "MUNICIPIOS", "ESTRATO", "CARGO_FIJO", "RANGO_0", "RANGO_21")
+data = data.na.drop()
 
-# Imprimimos el esquema de las columnas seleccionadas
-df_selected.printSchema()
+# Codificar la ubicación como una característica numérica (por ejemplo, mediante un índice)
+from pyspark.ml.feature import StringIndexer
+indexer_municipios = StringIndexer(inputCol="MUNICIPIOS", outputCol="MUNICIPIOS_index")
+data = indexer_municipios.fit(data).transform(data)
 
-# Seleccionamos el top 20 de valores más altos en "CARGO_FIJO" y mostramos las columnas requeridas
-top_20_cargo_fijo = df_selected.orderBy(F.col("CARGO_FIJO").desc()).limit(20)
+# 3. Extracción de características
+# Seleccion de las características para el modelo
+feature_cols = ["ANO", "MES", "CARGO_FIJO", "RANGO_0", "RANGO_21", "MUNICIPIOS_index", "ESTRATO"]
+assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
+data = assembler.transform(data)
 
-# Muestra el resultado
-print("Top 20 del Cargo Fijo más alto con el mes, año, NIT y estrato correspondiente:\n")
-top_20_cargo_fijo.show()
+# Seleccionar las columnas de entrada y la columna de demanda
+data = data.withColumnRenamed("RANGO_21", "DEMANDA")  # 'RANGO_21' representa la demanda
 
-# Ordenar filas por los valores en la columna "CARGO_FIJO" en orden descendente con todos los campos
-print("Valores ordenados de mayor a menor\n") 
-sorted_df = df.sort(F.col("CARGO_FIJO").desc())
-sorted_df.show()
+# 4. Entrenamiento del modelo de Regresión Lineal
+# Dividir los datos en conjuntos de entrenamiento y prueba
+train_data, test_data = data.randomSplit([0.8, 0.2], seed=42)
 
-# Finaliza la sesión de Spark
+# Definir el modelo de regresión lineal
+lr = LinearRegression(featuresCol="features", labelCol="DEMANDA")
+
+# Entrenar el modelo
+lr_model = lr.fit(train_data)
+
+# 5. Evaluación del modelo
+# Predecir en el conjunto de prueba
+predictions = lr_model.transform(test_data)
+
+# Evaluar el modelo usando el Error Cuadrático Medio (RMSE)
+evaluator = RegressionEvaluator(labelCol="DEMANDA", predictionCol="prediction", metricName="rmse")
+rmse = evaluator.evaluate(predictions)
+print(f"Root Mean Squared Error (RMSE): {rmse}")
+
+# Mostrar algunas predicciones
+predictions.select("ANO", "MES", "EMPRESA", "MUNICIPIOS", "DEMANDA", "prediction").show(10)
+
+# Finalizar la sesión de Spark
 spark.stop()
