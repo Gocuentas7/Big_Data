@@ -1,1 +1,487 @@
+use app_HuberCol
+
+// **************************************************************************************************************************************************************************************************************************
+
+// 1. Crear la colección "conductores" y definir un índice geoespacial
+db.conductores.createIndex({ ubicacion_actual: "2dsphere" });
+
+// Insertar 20 conductores
+db.conductores.insertMany([
+  { _id: "1", nombre: "Juan Pérez", telefono: "123456789", vehiculo: { marca: "Toyota", modelo: "Corolla", placa: "ABC123" }, ubicacion_actual: { type: "Point", coordinates: [-74.08175, 4.60971] }, disponible: true
+  },
+  { _id: "2", nombre: "María López", telefono: "987654321", vehiculo: { marca: "Hyundai", modelo: "Elantra", placa: "DEF456" }, ubicacion_actual: { type: "Point", coordinates: [-74.0721, 4.71099] }, disponible: false
+  },
+  { _id: "3", nombre: "Carlos Gómez", telefono: "555678123", vehiculo: { marca: "Kia", modelo: "Rio", placa: "GHI789" }, ubicacion_actual: { type: "Point", coordinates: [-74.0832, 4.6281] }, disponible: true
+  },
+  { _id: "4", nombre: "Ana Rodríguez", telefono: "444123678", vehiculo: { marca: "Chevrolet", modelo: "Sail", placa: "JKL012" }, ubicacion_actual: { type: "Point", coordinates: [-74.0697, 4.6458] }, disponible: true
+  },
+  { _id: "5", nombre: "Pedro Hernández", telefono: "333789456", vehiculo: { marca: "Nissan", modelo: "Sentra", placa: "MNO345" }, ubicacion_actual: { type: "Point", coordinates: [-74.0912, 4.6153] }, disponible: false
+  },
+  { _id: "6", nombre: "Laura Castillo", telefono: "666111222", vehiculo: { marca: "Ford", modelo: "Focus", placa: "PQR678" }, ubicacion_actual: { type: "Point", coordinates: [-74.0749, 4.6284] }, disponible: true
+  },
+  { _id: "7", nombre: "Jorge Ruiz", telefono: "999555888", vehiculo: { marca: "Honda", modelo: "Civic", placa: "STU901" }, ubicacion_actual: { type: "Point", coordinates: [-74.0887, 4.6202] }, disponible: false
+  },
+  { _id: "8", nombre: "Patricia Díaz", telefono: "222444666", vehiculo: { marca: "Mazda", modelo: "3", placa: "VWX234" }, ubicacion_actual: { type: "Point", coordinates: [-74.0795, 4.6034] }, disponible: true
+  },
+  { _id: "9", nombre: "Luis Martínez", telefono: "111333777", vehiculo: { marca: "Renault", modelo: "Logan", placa: "YZA567" }, ubicacion_actual: { type: "Point", coordinates: [-74.0648, 4.6491] }, disponible: true
+  },
+  { _id: "10", nombre: "Sofía Moreno", telefono: "888222111", vehiculo: { marca: "Volkswagen", modelo: "Jetta", placa: "BCD890" }, ubicacion_actual: { type: "Point", coordinates: [-74.0853, 4.6187] }, disponible: false
+  },
+  { _id: "11", nombre: "Raúl Sánchez", telefono: "777888999", vehiculo: { marca: "Suzuki", modelo: "Swift", placa: "EFG123" }, ubicacion_actual: { type: "Point", coordinates: [-74.0751, 4.6328] }, disponible: true
+  },
+  { _id: "12", nombre: "Gloria Vega", telefono: "333666444", vehiculo: { marca: "Subaru", modelo: "Impreza", placa: "HIJ456" }, ubicacion_actual: { type: "Point", coordinates: [-74.0674, 4.6512] }, disponible: true
+  },
+  { _id: "13", nombre: "Oscar Torres", telefono: "444888555", vehiculo: { marca: "BMW", modelo: "320i", placa: "KLM789" }, ubicacion_actual: { type: "Point", coordinates: [-74.0735, 4.6086] }, disponible: false
+  },
+  { _id: "14", nombre: "Valeria Ríos", telefono: "666333222", vehiculo: { marca: "Mercedes-Benz", modelo: "C-Class", placa: "NOP012" }, ubicacion_actual: { type: "Point", coordinates: [-74.0891, 4.6013] }, disponible: true
+  },
+  { _id: "15", nombre: "Miguel Pardo", telefono: "555222111", vehiculo: { marca: "Audi", modelo: "A4", placa: "QRS345" }, ubicacion_actual: { type: "Point", coordinates: [-74.0802, 4.6145] }, disponible: true
+  },
+  { _id: "16", nombre: "Elena Vargas", telefono: "999111888", vehiculo: { marca: "Fiat", modelo: "500", placa: "TUV678" }, ubicacion_actual: { type: "Point", coordinates: [-74.0657, 4.6419] }, disponible: false
+  },
+  { _id: "17", nombre: "Daniel Navarro", telefono: "444555333", vehiculo: { marca: "Peugeot", modelo: "208", placa: "WXY901" }, ubicacion_actual: { type: "Point", coordinates: [-74.0718, 4.6237] }, disponible: true
+  },
+  { _id: "18", nombre: "Camila Rojas", telefono: "111444777", vehiculo: { marca: "Jeep", modelo: "Compass", placa: "ZAB234" }, ubicacion_actual: { type: "Point", coordinates: [-74.0763, 4.6115] }, disponible: false
+  },
+  { _id: "19", nombre: "Fernando Morales", telefono: "222666888", vehiculo: { marca: "Tesla", modelo: "Model 3", placa: "CDE567" }, ubicacion_actual: { type: "Point", coordinates: [-74.0694, 4.6362] }, disponible: true
+  },
+  { _id: "20", nombre: "Isabel Medina", telefono: "888777444", vehiculo: { marca: "Volvo", modelo: "S60", placa: "FGH890" }, ubicacion_actual: { type: "Point", coordinates: [-74.0785, 4.6031] }, disponible: true
+  }
+]);
+
+// **************************************************************************************************************************************************************************************************************************
+
+// 2. Crear la colección "pasajeros" y definir un índice geoespacial
+db.pasajeros.createIndex({ ubicacion_actual: "2dsphere" });
+
+// Insertar 40 pasajeros
+db.pasajeros.insertMany([
+  { _id: "1", nombre: "Andrea Ramírez", telefono: "300111222", ubicacion_actual: { type: "Point", coordinates: [-74.0701, 4.6098] }, destino: { type: "Point", coordinates: [-74.0781, 4.6023] }
+  },
+  { _id: "2", nombre: "Carlos Moreno", telefono: "310333444", ubicacion_actual: { type: "Point", coordinates: [-74.0725, 4.6129] }, destino: { type: "Point", coordinates: [-74.0621, 4.6257] }
+  },
+  { _id: "3", nombre: "Laura Gómez", telefono: "320555666", ubicacion_actual: { type: "Point", coordinates: [-74.0807, 4.6032] }, destino: { type: "Point", coordinates: [-74.0915, 4.6151] }
+  },
+  { _id: "4", nombre: "Santiago Pérez", telefono: "300777888", ubicacion_actual: { type: "Point", coordinates: [-74.0654, 4.6423] }, destino: { type: "Point", coordinates: [-74.0733, 4.6294] }
+  },
+  { _id: "5", nombre: "Camila Vargas", telefono: "311999000", ubicacion_actual: { type: "Point", coordinates: [-74.0617, 4.6456] }, destino: { type: "Point", coordinates: [-74.0702, 4.6385] }
+  },
+  { _id: "6", nombre: "Luis Torres", telefono: "312111333", ubicacion_actual: { type: "Point", coordinates: [-74.0801, 4.6029] }, destino: { type: "Point", coordinates: [-74.0827, 4.6172] }
+  },
+  { _id: "7", nombre: "María Rojas", telefono: "313444555", ubicacion_actual: { type: "Point", coordinates: [-74.0698, 4.6087] }, destino: { type: "Point", coordinates: [-74.0783, 4.6168] }
+  },
+  { _id: "8", nombre: "Juan López", telefono: "314666777", ubicacion_actual: { type: "Point", coordinates: [-74.0901, 4.6111] }, destino: { type: "Point", coordinates: [-74.0963, 4.6004] }
+  },
+  { _id: "9", nombre: "Sara Martínez", telefono: "315888999", ubicacion_actual: { type: "Point", coordinates: [-74.0752, 4.6178] }, destino: { type: "Point", coordinates: [-74.0811, 4.6052] }
+  },
+  { _id: "10", nombre: "Jorge Ramírez", telefono: "316000111", ubicacion_actual: { type: "Point", coordinates: [-74.0823, 4.6124] }, destino: { type: "Point", coordinates: [-74.0905, 4.6048] }
+  },
+  { _id: "11", nombre: "Diana Sánchez", telefono: "317222333", ubicacion_actual: { type: "Point", coordinates: [-74.0739, 4.6085] }, destino: { type: "Point", coordinates: [-74.0784, 4.6017] }
+  },
+  { _id: "12", nombre: "Ricardo Vargas", telefono: "318444555", ubicacion_actual: { type: "Point", coordinates: [-74.0628, 4.6273] }, destino: { type: "Point", coordinates: [-74.0687, 4.6341] }
+  },
+  { _id: "13", nombre: "Isabela Rodríguez", telefono: "319666777", ubicacion_actual: { type: "Point", coordinates: [-74.0853, 4.6189] }, destino: { type: "Point", coordinates: [-74.0924, 4.6025] }
+  },
+  { _id: "14", nombre: "Felipe Gutiérrez", telefono: "300999888", ubicacion_actual: { type: "Point", coordinates: [-74.0696, 4.6298] }, destino: { type: "Point", coordinates: [-74.0812, 4.6101] }
+  },
+  { _id: "15", nombre: "Valentina Méndez", telefono: "301333222", ubicacion_actual: { type: "Point", coordinates: [-74.0887, 4.6055] }, destino: { type: "Point", coordinates: [-74.0958, 4.6119] }
+  },
+  { _id: "16", nombre: "Héctor Suárez", telefono: "302555444", ubicacion_actual: { type: "Point", coordinates: [-74.0785, 4.6163] }, destino: { type: "Point", coordinates: [-74.0709, 4.6097] }
+  },
+  { _id: "17", nombre: "Gloria Peña", telefono: "303777666", ubicacion_actual: { type: "Point", coordinates: [-74.0832, 4.6225] }, destino: { type: "Point", coordinates: [-74.0895, 4.6301] }
+  },
+  { _id: "18", nombre: "Manuel Cárdenas", telefono: "304999111", ubicacion_actual: { type: "Point", coordinates: [-74.0611, 4.6258] }, destino: { type: "Point", coordinates: [-74.0694, 4.6117] }
+  },
+  { _id: "19", nombre: "Natalia Ruiz", telefono: "305222888", ubicacion_actual: { type: "Point", coordinates: [-74.0746, 4.6203] }, destino: { type: "Point", coordinates: [-74.0803, 4.6311] }
+  },
+  { _id: "20", nombre: "Daniel Vargas", telefono: "306333111", ubicacion_actual: { type: "Point", coordinates: [-74.0928, 4.6075] }, destino: { type: "Point", coordinates: [-74.0867, 4.6152] }
+  },
+  { _id: "21", nombre: "Paola Álvarez", telefono: "307444222", ubicacion_actual: { type: "Point", coordinates: [-74.0771, 4.6114] }, destino: { type: "Point", coordinates: [-74.0893, 4.6215] }
+  },
+  { _id: "22", nombre: "Javier Quintero", telefono: "308555333", ubicacion_actual: { type: "Point", coordinates: [-74.0732, 4.6109] }, destino: { type: "Point", coordinates: [-74.0707, 4.6178] } 
+  },
+  { _id: "23", nombre: "Liliana Orozco", telefono: "309777111", ubicacion_actual: { type: "Point", coordinates: [-74.0684, 4.6042] }, destino: { type: "Point", coordinates: [-74.0799, 4.6123] }
+  },
+  { _id: "24", nombre: "Mario Nieto", telefono: "310888444", ubicacion_actual: { type: "Point", coordinates: [-74.0917, 4.6234] }, destino: { type: "Point", coordinates: [-74.0842, 4.6298] }
+  },
+  { _id: "25", nombre: "Susana Mendoza", telefono: "311222555", ubicacion_actual: { type: "Point", coordinates: [-74.0769, 4.6127] }, destino: { type: "Point", coordinates: [-74.0895, 4.6081] }
+  },
+  { _id: "26", nombre: "Andrés Bonilla", telefono: "312333666", ubicacion_actual: { type: "Point", coordinates: [-74.0668, 4.6205] }, destino: { type: "Point", coordinates: [-74.0725, 4.6111] }
+  },
+  { _id: "27", nombre: "Luisa Morales", telefono: "313555888", ubicacion_actual: { type: "Point", coordinates: [-74.0713, 4.6048] }, destino: { type: "Point", coordinates: [-74.0781, 4.6145] }
+  },
+  { _id: "28", nombre: "Sergio Delgado", telefono: "314777999", ubicacion_actual: { type: "Point", coordinates: [-74.0814, 4.6176] }, destino: { type: "Point", coordinates: [-74.0897, 4.6245] }
+  },
+  { _id: "29", nombre: "Gabriela Ortiz", telefono: "315888222", ubicacion_actual: { type: "Point", coordinates: [-74.0855, 4.6032] }, destino: { type: "Point", coordinates: [-74.0804, 4.6159] }
+  },
+  { _id: "30", nombre: "Tomás Salazar", telefono: "316000333", ubicacion_actual: { type: "Point", coordinates: [-74.0789, 4.6231] }, destino: { type: "Point", coordinates: [-74.0912, 4.6095] }
+  },
+  { _id: "31", nombre: "Alicia Duarte", telefono: "317444555", ubicacion_actual: { type: "Point", coordinates: [-74.0632, 4.6193] }, destino: { type: "Point", coordinates: [-74.0687, 4.6305] }
+  },
+  { _id: "32", nombre: "Pablo Torres", telefono: "318666111", ubicacion_actual: { type: "Point", coordinates: [-74.0921, 4.6102] }, destino: { type: "Point", coordinates: [-74.0853, 4.6011] }
+  },
+  { _id: "33", nombre: "Natalia Peña", telefono: "319888444", ubicacion_actual: { type: "Point", coordinates: [-74.0697, 4.6091] }, destino: { type: "Point", coordinates: [-74.0789, 4.6164] }
+  },
+  { _id: "34", nombre: "Julián Prieto", telefono: "300222777", ubicacion_actual: { type: "Point", coordinates: [-74.0813, 4.6207] }, destino: { type: "Point", coordinates: [-74.0904, 4.6082] }
+  },
+  { _id: "35", nombre: "Rosa Alvarado", telefono: "301444888", ubicacion_actual: { type: "Point", coordinates: [-74.0765, 4.6116] }, destino: { type: "Point", coordinates: [-74.0859, 4.6192] }
+  },
+  { _id: "36", nombre: "Hugo Vargas", telefono: "301444898", ubicacion_actual: { type: "Point", coordinates: [-74.0892, 4.6057] }, destino: { type: "Point", coordinates: [-74.0951, 4.6113] }
+  },
+  { _id: "37", nombre: "Andrea Londoño", telefono: "303000222", ubicacion_actual: { type: "Point", coordinates: [-74.0679, 4.6035] }, destino: { type: "Point", coordinates: [-74.0748, 4.6111] }
+  },
+  { _id: "38", nombre: "Fernando Gómez", telefono: "304111333", ubicacion_actual: { type: "Point", coordinates: [-74.0727, 4.6169] }, destino: { type: "Point", coordinates: [-74.0806, 4.6073] }
+  },
+  { _id: "39", nombre: "Carolina López", telefono: "305333666", ubicacion_actual: { type: "Point", coordinates: [-74.0834, 4.6084] }, destino: { type: "Point", coordinates: [-74.0915, 4.6039] }
+  },
+  { _id: "40", nombre: "Andrés Ocampo", telefono: "306555111", ubicacion_actual: { type: "Point", coordinates: [-74.0653, 4.6245] }, destino: { type: "Point", coordinates: [-74.0724, 4.6108] }
+  }
+]);
+
+// **************************************************************************************************************************************************************************************************************************
+
+// 3. Crear la colección "viajes"
+db.viajes.createIndex({ origen: "2dsphere" });
+db.viajes.createIndex({ destino: "2dsphere" });
+
+// Insertar 40 viajes
+db.viajes.insertMany([
+  { _id: "1", pasajero_id: "1", conductor_id: "2", origen: { type: "Point", coordinates: [-74.0701, 4.6098] }, destino: { type: "Point", coordinates: [-74.0781, 4.6023] }, precio: 12000, estado: "completado", fecha_hora: ISODate("2024-11-16T08:00:00Z")
+  },
+  { _id: "2", pasajero_id: "2", conductor_id: "1", origen: { type: "Point", coordinates: [-74.0725, 4.6129] }, destino: { type: "Point", coordinates: [-74.0621, 4.6257] }, precio: 15000, estado: "completado", fecha_hora: ISODate("2024-11-16T08:30:00Z")
+  },
+  { _id: "3", pasajero_id: "3", conductor_id: "3", origen: { type: "Point", coordinates: [-74.0807, 4.6032] }, destino: { type: "Point", coordinates: [-74.0915, 4.6151] }, precio: 18000, estado: "cancelado", fecha_hora: ISODate("2024-11-16T09:00:00Z")
+  },
+  { _id: "4", pasajero_id: "4", conductor_id: "4", origen: { type: "Point", coordinates: [-74.0654, 4.6423] }, destino: { type: "Point", coordinates: [-74.0733, 4.6294] }, precio: 10000, estado: "completado", fecha_hora: ISODate("2024-11-16T09:15:00Z")
+  },
+  { _id: "5", pasajero_id: "5", conductor_id: "5", origen: { type: "Point", coordinates: [-74.0617, 4.6456] }, destino: { type: "Point", coordinates: [-74.0702, 4.6385] }, precio: 13000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T09:45:00Z")
+  },
+  { _id: "6", pasajero_id: "6", conductor_id: "6", origen: { type: "Point", coordinates: [-74.0801, 4.6029] }, destino: { type: "Point", coordinates: [-74.0827, 4.6172] }, precio: 12000, estado: "completado", fecha_hora: ISODate("2024-11-16T10:00:00Z")
+  },
+  { _id: "7", pasajero_id: "7", conductor_id: "7", origen: { type: "Point", coordinates: [-74.0698, 4.6087] }, destino: { type: "Point", coordinates: [-74.0783, 4.6168] }, precio: 14000, estado: "cancelado", fecha_hora: ISODate("2024-11-16T10:30:00Z")
+  },
+  { _id: "8", pasajero_id: "8", conductor_id: "8", origen: { type: "Point", coordinates: [-74.0901, 4.6111] }, destino: { type: "Point", coordinates: [-74.0963, 4.6004] }, precio: 20000, estado: "completado", fecha_hora: ISODate("2024-11-16T11:00:00Z")
+  },
+  { _id: "9", pasajero_id: "9", conductor_id: "9", origen: { type: "Point", coordinates: [-74.0752, 4.6178] }, destino: { type: "Point", coordinates: [-74.0811, 4.6052] }, precio: 18000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T11:30:00Z")
+  },
+  { _id: "10", pasajero_id: "10", conductor_id: "10", origen: { type: "Point", coordinates: [-74.0823, 4.6124] }, destino: { type: "Point", coordinates: [-74.0905, 4.6048] }, precio: 19000, estado: "completado", fecha_hora: ISODate("2024-11-16T12:00:00Z")
+  },
+  { _id: "11", pasajero_id: "11", conductor_id: "11", origen: { type: "Point", coordinates: [-74.0705, 4.6089] }, destino: { type: "Point", coordinates: [-74.0782, 4.6154] }, precio: 17000, estado: "completado", fecha_hora: ISODate("2024-11-16T12:30:00Z")
+  },
+  { _id: "12", pasajero_id: "12", conductor_id: "12", origen: { type: "Point", coordinates: [-74.0912, 4.6097] }, destino: { type: "Point", coordinates: [-74.0804, 4.6235] }, precio: 22000, estado: "cancelado", fecha_hora: ISODate("2024-11-16T13:00:00Z")
+  },
+  { _id: "13", pasajero_id: "13", conductor_id: "13", origen: { type: "Point", coordinates: [-74.0628, 4.6145] }, destino: { type: "Point", coordinates: [-74.0723, 4.6194] }, precio: 14000, estado: "completado", fecha_hora: ISODate("2024-11-16T13:30:00Z")
+  },
+  { _id: "14", pasajero_id: "14", conductor_id: "14", origen: { type: "Point", coordinates: [-74.0835, 4.6102] }, destino: { type: "Point", coordinates: [-74.0932, 4.6021] }, precio: 15000, estado: "completado", fecha_hora: ISODate("2024-11-16T14:00:00Z")
+  },
+  { _id: "15", pasajero_id: "15", conductor_id: "15", origen: { type: "Point", coordinates: [-74.0689, 4.6251] }, destino: { type: "Point", coordinates: [-74.0753, 4.6113] }, precio: 16000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T14:30:00Z")
+  },
+  { _id: "16", pasajero_id: "16", conductor_id: "16", origen: { type: "Point", coordinates: [-74.0774, 4.6177] }, destino: { type: "Point", coordinates: [-74.0857, 4.6108] }, precio: 18000, estado: "completado", fecha_hora: ISODate("2024-11-16T15:00:00Z")
+  },
+  { _id: "17", pasajero_id: "17", conductor_id: "17", origen: { type: "Point", coordinates: [-74.0739, 4.6115] }, destino: { type: "Point", coordinates: [-74.0811, 4.6049] }, precio: 20000, estado: "cancelado", fecha_hora: ISODate("2024-11-16T15:30:00Z")
+  },
+  { _id: "18", pasajero_id: "18", conductor_id: "18", origen: { type: "Point", coordinates: [-74.0812, 4.6028] }, destino: { type: "Point", coordinates: [-74.0904, 4.6175] }, precio: 21000, estado: "completado", fecha_hora: ISODate("2024-11-16T16:00:00Z")
+  },
+  { _id: "19", pasajero_id: "19", conductor_id: "19", origen: { type: "Point", coordinates: [-74.0653, 4.6218] }, destino: { type: "Point", coordinates: [-74.0751, 4.6087] }, precio: 19000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T16:30:00Z")
+  },
+  { _id: "20", pasajero_id: "20", conductor_id: "20", origen: { type: "Point", coordinates: [-74.0735, 4.6043] }, destino: { type: "Point", coordinates: [-74.0826, 4.6196] }, precio: 17000, estado: "completado", fecha_hora: ISODate("2024-11-16T17:00:00Z")
+  },
+  { _id: "21", pasajero_id: "21", conductor_id: "5", origen: { type: "Point", coordinates: [-74.0901, 4.6112] }, destino: { type: "Point", coordinates: [-74.0813, 4.6229] }, precio: 23000, estado: "completado", fecha_hora: ISODate("2024-11-16T17:30:00Z")
+  },
+  { _id: "22", pasajero_id: "22", conductor_id: "6", origen: { type: "Point", coordinates: [-74.0754, 4.6142] }, destino: { type: "Point", coordinates: [-74.0857, 4.6078] }, precio: 15000, estado: "cancelado", fecha_hora: ISODate("2024-11-16T18:00:00Z")
+  },
+  { _id: "23", pasajero_id: "23", conductor_id: "7", origen: { type: "Point", coordinates: [-74.0612, 4.6256] }, destino: { type: "Point", coordinates: [-74.0724, 4.6167] }, precio: 19000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T18:30:00Z")
+  },
+  { _id: "24", pasajero_id: "24", conductor_id: "8", origen: { type: "Point", coordinates: [-74.0857, 4.6102] }, destino: { type: "Point", coordinates: [-74.0932, 4.6035] }, precio: 20000, estado: "completado", fecha_hora: ISODate("2024-11-16T19:00:00Z")
+  },
+  { _id: "25", pasajero_id: "25", conductor_id: "9", origen: { type: "Point", coordinates: [-74.0732, 4.6076] }, destino: { type: "Point", coordinates: [-74.0805, 4.6223] }, precio: 14000, estado: "completado", fecha_hora: ISODate("2024-11-16T19:30:00Z")
+  },
+  { _id: "26", pasajero_id: "26", conductor_id: "10", origen: { type: "Point", coordinates: [-74.0703, 4.6051] }, destino: { type: "Point", coordinates: [-74.0824, 4.6202] }, precio: 12000, estado: "completado", fecha_hora: ISODate("2024-11-16T20:00:00Z")
+  },
+  { _id: "27", pasajero_id: "27", conductor_id: "11", origen: { type: "Point", coordinates: [-74.0913, 4.6143] }, destino: { type: "Point", coordinates: [-74.0856, 4.6027] }, precio: 18000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T20:30:00Z")
+  },
+  { _id: "28", pasajero_id: "28", conductor_id: "12", origen: { type: "Point", coordinates: [-74.0657, 4.6151] }, destino: { type: "Point", coordinates: [-74.0715, 4.6204] }, precio: 14000, estado: "completado", fecha_hora: ISODate("2024-11-16T21:00:00Z")
+  },
+  { _id: "29", pasajero_id: "29", conductor_id: "13", origen: { type: "Point", coordinates: [-74.0732, 4.6055] }, destino: { type: "Point", coordinates: [-74.0821, 4.6129] }, precio: 16000, estado: "cancelado", fecha_hora: ISODate("2024-11-16T21:30:00Z")
+  },
+  { _id: "30", pasajero_id: "30", conductor_id: "14", origen: { type: "Point", coordinates: [-74.0805, 4.6087] }, destino: { type: "Point", coordinates: [-74.0883, 4.6156] }, precio: 15000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T22:00:00Z")
+  },
+  { _id: "31", pasajero_id: "31", conductor_id: "15", origen: { type: "Point", coordinates: [-74.0701, 4.6223] }, destino: { type: "Point", coordinates: [-74.0787, 4.6094] }, precio: 18000, estado: "completado", fecha_hora: ISODate("2024-11-16T22:30:00Z")
+  },
+  { _id: "32", pasajero_id: "32", conductor_id: "16", origen: { type: "Point", coordinates: [-74.0834, 4.6105] }, destino: { type: "Point", coordinates: [-74.0912, 4.6029] }, precio: 19000, estado: "completado", fecha_hora: ISODate("2024-11-16T23:00:00Z")
+  },
+  { _id: "33", pasajero_id: "33", conductor_id: "17", origen: { type: "Point", coordinates: [-74.0755, 4.6098] }, destino: { type: "Point", coordinates: [-74.0836, 4.6212] }, precio: 17000, estado: "pendiente", fecha_hora: ISODate("2024-11-16T23:30:00Z")
+  },
+  { _id: "34", pasajero_id: "34", conductor_id: "18", origen: { type: "Point", coordinates: [-74.0717, 4.6054] }, destino: { type: "Point", coordinates: [-74.0802, 4.6145] }, precio: 15000, estado: "cancelado", fecha_hora: ISODate("2024-11-17T00:00:00Z")
+  },
+  { _id: "35", pasajero_id: "35", conductor_id: "19", origen: { type: "Point", coordinates: [-74.0623, 4.6182] }, destino: { type: "Point", coordinates: [-74.0731, 4.6124] }, precio: 13000, estado: "completado", fecha_hora: ISODate("2024-11-17T00:30:00Z")
+  },
+  { _id: "36", pasajero_id: "36", conductor_id: "20", origen: { type: "Point", coordinates: [-74.0887, 4.6083] }, destino: { type: "Point", coordinates: [-74.0935, 4.6157] }, precio: 22000, estado: "completado", fecha_hora: ISODate("2024-11-17T01:00:00Z")
+  },
+  { _id: "37", pasajero_id: "37", conductor_id: "1", origen: { type: "Point", coordinates: [-74.0814, 4.6067] }, destino: { type: "Point", coordinates: [-74.0898, 4.6184] }, precio: 24000, estado: "pendiente", fecha_hora: ISODate("2024-11-17T01:30:00Z")
+  },
+  { _id: "38", pasajero_id: "38", conductor_id: "2", origen: { type: "Point", coordinates: [-74.0753, 4.6201] }, destino: { type: "Point", coordinates: [-74.0845, 4.6108] }, precio: 17000, estado: "cancelado", fecha_hora: ISODate("2024-11-17T02:00:00Z")
+  },
+  { _id: "39", pasajero_id: "39", conductor_id: "3", origen: { type: "Point", coordinates: [-74.0694, 4.6113] }, destino: { type: "Point", coordinates: [-74.0779, 4.6221] }, precio: 19000, estado: "completado", fecha_hora: ISODate("2024-11-17T02:30:00Z")
+  },
+  { _id: "40", pasajero_id: "40", conductor_id: "4", origen: { type: "Point", coordinates: [-74.0831, 4.6035] }, destino: { type: "Point", coordinates: [-74.0927, 4.6187] }, precio: 21000, estado: "completado", fecha_hora: ISODate("2024-11-17T03:00:00Z")
+  }
+]);
+
+
+// **************************************************************************************************************************************************************************************************************************
+
+// a)	Inserción de documentos
+// Insertar un pasajero
+db.pasajeros.insertOne({
+  _id: "41",
+  nombre: "Carlos Gómez",
+  telefono: "3111234567",
+  correo: "carlos.gomez@example.com",
+  ubicacion_actual: { type: "Point", coordinates: [-74.0721, 4.6099] }
+});
+
+// Insertar múltiples conductores
+db.conductores.insertMany([
+  {
+    _id: "21",
+    nombre: "Laura Medina",
+    telefono: "3109876543",
+    licencia: "LM12345",
+    ubicacion_actual: { type: "Point", coordinates: [-74.0789, 4.6174] }
+  },
+  {
+    _id: "22",
+    nombre: "Jorge Ruiz",
+    telefono: "3205678910",
+    licencia: "JR67890",
+    ubicacion_actual: { type: "Point", coordinates: [-74.0854, 4.6033] }
+  }
+]);
+
+// Insertar un viaje
+db.viajes.insertOne({
+  _id: "41",
+  pasajero_id: "41",
+  conductor_id: "21",
+  origen: { type: "Point", coordinates: [-74.0721, 4.6099] },
+  destino: { type: "Point", coordinates: [-74.0805, 4.6107] },
+  precio: 20000,
+  estado: "pendiente",
+  fecha_hora: ISODate("2024-11-17T12:00:00Z")
+});
+
+// **************************************************************************************************************************************************************************************************************************
+
+// b)	Encontrar conductores disponibles cerca de un pasajero
+db.conductores.find({
+  ubicacion_actual: {
+    $near: {
+      $geometry: {
+        type: "Point",
+        coordinates: [-74.0721, 4.71099]  // Ubicación del pasajero
+      },
+      $maxDistance: 5000  // 5 km
+    }
+  },
+  disponible: true
+});
+
+// **************************************************************************************************************************************************************************************************************************
+
+// c)	Selección de documentos
+// Seleccionar todos los pasajeros
+db.pasajeros.find();
+
+// Seleccionar todos los conductores ordenados por nombre
+db.conductores.find().sort({ nombre: 1 });
+
+// Buscar un viaje específico por ID
+db.viajes.findOne({ _id: "41" });
+
+// Buscar viajes completados
+db.viajes.find({ estado: "completado" });
+
+// Buscar pasajeros cerca de una ubicación (geoespacial)
+db.pasajeros.find({
+  ubicacion_actual: {
+    $near: {
+      $geometry: { type: "Point", coordinates: [-74.0721, 4.6099] },
+      $maxDistance: 1000 // Distancia máxima en metros
+    }
+  }
+});
+
+// **************************************************************************************************************************************************************************************************************************
+
+// d)	Actualización de documentos
+// Actualizar el correo de un pasajero
+db.pasajeros.updateOne(
+  { _id: "41" },
+  { $set: { correo: "nuevo.email@example.com" } }
+);
+
+// Actualizar la ubicación de un conductor
+db.conductores.updateOne(
+  { _id: "21" },
+  { $set: { ubicacion_actual: { type: "Point", coordinates: [-74.0812, 4.6128] } } }
+);
+
+// Cambiar el estado de un viaje
+db.viajes.updateOne(
+  { _id: "41" },
+  { $set: { estado: "completado", fecha_hora: ISODate("2024-11-17T14:00:00Z") } }
+);
+
+// Incrementar el precio de todos los viajes pendientes en 10%
+db.viajes.updateMany(
+  { estado: "pendiente" },
+  { $mul: { precio: 1.10 } }
+);
+
+// **************************************************************************************************************************************************************************************************************************
+
+// e)	Eliminación de documentos
+// Eliminar un pasajero por ID
+db.pasajeros.deleteOne({ _id: "41" });
+
+// Eliminar todos los conductores con una licencia específica
+db.conductores.deleteMany({ licencia: "JR67890" });
+
+// Eliminar viajes cancelados
+db.viajes.deleteMany({ estado: "cancelado" });
+
+// *****Consultas con filtros y operadores**********************************************************************************************************************************************************************************
+
+a)	Consultas con Operadores de Comparación
+// Viajes con precio mayor a 20,000
+db.viajes.find({ precio: { $gt: 20000 } });
+
+// Conductores cuyos nombres empiezan con "J"
+db.conductores.find({ nombre: { $regex: "^J", $options: "i" } });
+
+// Pasajeros ubicados a más de 2 km del punto dado
+db.pasajeros.find({
+  ubicacion_actual: {
+    $near: {
+      $geometry: { type: "Point", coordinates: [-74.0721, 4.6099] },
+      $minDistance: 2000 // Distancia mínima en metros
+    }
+  }
+});
+
+// Viajes con precio entre 15,000 y 30,000
+db.viajes.find({ precio: { $gte: 15000, $lte: 30000 } });
+
+// **************************************************************************************************************************************************************************************************************************
+
+b)	Consultas con Operadores Lógicos
+// Viajes con estado "pendiente" o "cancelado"
+db.viajes.find({
+  $or: [{ estado: "pendiente" }, { estado: "cancelado" }]
+});
+
+// Pasajeros que no tienen un correo electrónico asignado
+db.pasajeros.find({ correo: { $exists: false } });
+
+// Conductores ubicados en un rango de coordenadas específicas
+db.conductores.find({
+  $and: [
+    { "ubicacion_actual.coordinates.0": { $gt: -74.0800, $lt: -74.0700 } },
+    { "ubicacion_actual.coordinates.1": { $gt: 4.6000, $lt: 4.6200 } }
+  ]
+});
+
+// Viajes que NO estén completados
+db.viajes.find({ estado: { $ne: "completado" } });
+
+// **************************************************************************************************************************************************************************************************************************
+
+c)	Consultas con Operadores de Agregación
+// Precio promedio de los viajes completados
+db.viajes.aggregate([
+  { $match: { estado: "completado" } },
+  { $group: { _id: null, precioPromedio: { $avg: "$precio" } } }
+]);
+
+// Total de viajes realizados por cada conductor
+db.viajes.aggregate([
+  { $group: { _id: "$conductor_id", totalViajes: { $sum: 1 } } },
+  { $sort: { totalViajes: -1 } } // Orden descendente
+]);
+
+// Contar pasajeros con un correo electrónico registrado
+db.pasajeros.aggregate([
+  { $match: { correo: { $exists: true } } },
+  { $count: "totalPasajerosConCorreo" }
+]);
+
+// ******Consultas de agregación para calcular estadísticas******************************************************************************************************************************************************************
+
+a)	Calcular el precio promedio de los viajes por estado
+db.viajes.aggregate([
+  {
+    $group: {
+      _id: "$estado", // Agrupar por estado
+      precioPromedio: { $avg: "$precio" }, // Calcular precio promedio
+      totalViajes: { $sum: 1 } // Contar el número de viajes por estado
+    }
+  },
+  {
+    $sort: { precioPromedio: -1 } // Ordenar de mayor a menor precio promedio
+  }
+]);
+
+// **************************************************************************************************************************************************************************************************************************
+
+b)	Obtener el conductor con más viajes realizados
+db.viajes.aggregate([
+  {
+    $group: {
+      _id: "$conductor_id", // Agrupar por ID del conductor
+      totalViajes: { $sum: 1 } // Contar los viajes realizados por cada conductor
+    }
+  },
+  {
+    $sort: { totalViajes: -1 } // Ordenar de mayor a menor número de viajes
+  },
+  {
+    $limit: 1 // Seleccionar al conductor con más viajes
+  }
+]);
+
+// **************************************************************************************************************************************************************************************************************************
+
+c)	Calcular el total de ingresos por conductor
+db.viajes.aggregate([
+  {
+    $group: {
+      _id: "$conductor_id", // Agrupar por ID del conductor
+      totalIngresos: { $sum: "$precio" }, // Calcular la suma total de los precios
+      totalViajes: { $sum: 1 } // Contar la cantidad de viajes
+    }
+  },
+  {
+    $lookup: {
+      from: "conductores", // Combinar con la colección conductores
+      localField: "_id",
+      foreignField: "_id",
+      as: "detallesConductor"
+    }
+  },
+  {
+    $project: {
+      conductor: { $arrayElemAt: ["$detallesConductor.nombre", 0] }, // Mostrar el nombre del conductor
+      totalIngresos: 1,
+      totalViajes: 1
+    }
+  },
+  {
+    $sort: { totalIngresos: -1 } // Ordenar de mayor a menor ingreso
+  }
+]);
+
+// ***************************************************Muchas gracias por su atención******************************************************************************************************************
+
+
 
