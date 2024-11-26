@@ -1,0 +1,153 @@
+import happybase
+import pandas as pd
+
+# Bloque principal de ejecución
+try:
+    # 1. Establecer conexión con HBase
+    connection = happybase.Connection('localhost')
+    print("Conexión establecida con HBase")
+    
+    # 2. Crear la tabla con las familias de columnas
+    table_name = 'gas_tarifas'
+    families = {
+        'basic': dict(),  # Información básica del gas
+        'rates': dict(),  # Tarifas
+    }
+
+    # Eliminar la tabla si ya existe
+    if table_name.encode() in connection.tables():
+        print(f"Eliminando tabla existente - {table_name}")
+        connection.delete_table(table_name, disable=True)
+    
+    # Crear nueva tabla
+    connection.create_table(table_name, families)
+    table = connection.table(table_name)
+    print("Tabla 'gas_tarifas' creada exitosamente")
+    
+    # 3. Cargar datos del CSV
+    gas_data = pd.read_csv('/home/vboxuser/ek3f-5wn4.csv')
+
+    # Iterar sobre el DataFrame usando el índice
+    for index, row in gas_data.iterrows():
+        # Generar row key basado en el índice
+        row_key = f'{row["ano"]}_{row["mes"]}_{row["empresa"]}'.encode()
+
+        # Organizar los datos en familias de columnas
+        data = {
+            b'basic:ano': str(row['ano']).encode(),
+            b'basic:mes': str(row['mes']).encode(),
+            b'basic:empresa': str(row['empresa']).encode(),
+            b'basic:municipios': str(row['municipios']).encode(),
+            b'basic:nit': str(row['nit']).encode(),
+            b'basic:id_mercado': str(row['id_mercado']).encode(),
+            b'basic:id_empresa': str(row['id_empresa']).encode(),
+            b'basic:estrato': str(row['estrato']).encode(),
+            b'basic:conexion': str(row['conexion']).encode(),
+            b'basic:reinstalacion': str(row['reinstalacion']).encode(),
+            b'basic:reconexion': str(row['reconexion']).encode(),
+            b'rates:cargo_fijo': str(row['cargo_fijo']).encode(),
+            b'rates:rango_0': str(row['rango_0']).encode(),
+            b'rates:rango_21': str(row['rango_21']).encode(),
+        }
+        
+        # Insertar los datos en la tabla
+        table.put(row_key, data)
+    print("Datos cargados exitosamente")
+
+    # 4. Consultas y análisis de datos
+    print("\n=== Primeros 20 registros ===")
+    registros = []
+    count = 0
+    for key, data in table.scan():
+        if count < 20:  # Limitar a los primeros 20 registros
+            registros.append({
+                'key': key.decode(),
+                'ano': data[b'basic:ano'].decode(),
+                'mes': data[b'basic:mes'].decode(),
+                'empresa': data[b'basic:empresa'].decode(),
+                'nit': data[b'basic:nit'].decode(),
+                'cargo_fijo': float(data[b'rates:cargo_fijo'].decode()),
+            })
+            print(f"\nRegistro ID: {key.decode()}")
+            print(f"Año: {data[b'basic:ano'].decode()}")
+            print(f"Mes: {data[b'basic:mes'].decode()}")
+            print(f"Empresa: {data[b'basic:empresa'].decode()}")
+            print(f"Rango 0: {data[b'rates:rango_0'].decode()}")
+            count += 1
+
+    # 5. Encontrar las tres empresas con la tarifa más alta
+    print("\n=== Tres empresas con la tarifa más alta ===")
+    top_tarifas = sorted(registros, key=lambda x: x['cargo_fijo'], reverse=True)[:3]
+    for registro in top_tarifas:
+        print(f"Empresa: {registro['empresa']}, Tarifa: {registro['cargo_fijo']}, Año: {registro['ano']}, Mes: {registro['mes']}")
+
+    # 6. Encontrar las tres empresas con la tarifa más baja
+    print("\n=== Tres empresas con la tarifa más baja ===")
+    low_tarifas = sorted(registros, key=lambda x: x['cargo_fijo'])[:3]
+    for registro in low_tarifas:
+        print(f"Empresa: {registro['empresa']}, Tarifa: {registro['cargo_fijo']}, Año: {registro['ano']}, Mes: {registro['mes']}")
+
+    # 7. Insertar nuevos datos
+    print("\n=== Insertar nuevos datos ===")
+    new_row_key = '2024_12_NuevaEmpresa'.encode()  # Clave de la nueva fila
+    new_data = {
+        b'basic:ano': '2024'.encode(),
+        b'basic:mes': '12'.encode(),
+        b'basic:empresa': 'NuevaEmpresa'.encode(),
+        b'basic:municipios': 'CiudadX'.encode(),
+        b'basic:nit': '123456789'.encode(),
+        b'basic:id_mercado': 'MERCADO1'.encode(),
+        b'basic:id_empresa': 'EMPRESA123'.encode(),
+        b'basic:estrato': '3'.encode(),
+        b'basic:conexion': 'SI'.encode(),
+        b'basic:reinstalacion': 'NO'.encode(),
+        b'basic:reconexion': 'NO'.encode(),
+        b'rates:cargo_fijo': '20000'.encode(),
+        b'rates:rango_0': '0.1'.encode(),
+        b'rates:rango_21': '0.2'.encode(),
+    }
+    # Insertar los datos en la tabla
+    table.put(new_row_key, new_data)
+    print("Nuevo dato insertado exitosamente")
+
+    # Recuperar y mostrar el nombre de la empresa y el NIT insertado
+    row_data = table.row(new_row_key)
+    empresa_insertada = row_data[b'basic:empresa'].decode()
+    nit_insertado = row_data[b'basic:nit'].decode()
+    
+    print(f"Nombre de la Empresa Insertada: {empresa_insertada}")
+    print(f"NIT de la Empresa Insertada: {nit_insertado}")
+
+    # 8. Eliminar datos de la tabla
+    print("\n=== Eliminar una fila ===")
+    fila_a_eliminar = int(input("Indica el número de fila a eliminar (0-19): "))
+    
+    if 0 <= fila_a_eliminar < len(registros):
+        registro_eliminar = registros[fila_a_eliminar]
+        table.delete(registro_eliminar['key'].encode())
+        print(f"Fila eliminada: {fila_a_eliminar}")
+        print(f"Empresa: {registro_eliminar['empresa']}, NIT: {registro_eliminar['nit']}")
+    else:
+        print("Número de fila inválido")
+
+    # 9. Actualización de datos
+    print("\n=== Actualizar el cargo fijo de una fila ===")
+    fila_a_actualizar = int(input("Indica el número de fila a actualizar (0-19): "))
+    nuevo_cargo_fijo = float(input("Introduce el nuevo valor de cargo fijo: "))
+    
+    if 0 <= fila_a_actualizar < len(registros):
+        registro_actualizar = registros[fila_a_actualizar]
+        table.put(
+            registro_actualizar['key'].encode(), 
+            {b'rates:cargo_fijo': str(nuevo_cargo_fijo).encode()}
+        )
+        print(f"Cargo fijo actualizado para la empresa: {registro_actualizar['empresa']}")
+        print(f"Nuevo valor de cargo fijo: {nuevo_cargo_fijo}")
+    else:
+        print("Número de fila inválido")    
+
+except Exception as e:
+    print(f"Error: {str(e)}")
+finally:
+    # Cerrar la conexión
+    connection.close()
